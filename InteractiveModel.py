@@ -2,7 +2,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 import tensorflow as tf
 from keras.models import model_from_json
+from tensorflow.keras import backend as K
 from tensorflow.keras.preprocessing import image
+import matplotlib.pyplot as plt
 import numpy as np
 
 class Simpsins_CNN:
@@ -74,3 +76,37 @@ class Simpsins_CNN:
         predicted_label = Simpsins_CNN.TARGET_NAMES[predicted_class]
 
         return predicted_label     
+    def get_saliency_map(self, image_path):
+        # Load and preprocess the image
+        img = image.load_img(image_path, target_size=self.image_size_scaling)
+        img_array = image.img_to_array(img) / 255.0  # Normalize
+        img_array = np.expand_dims(img_array, axis=0)  # Shape (1, 128, 128, 3)
+
+        # Make a prediction to determine the class of the image
+        predictions = self.model.predict(img_array)
+        predicted_class = np.argmax(predictions, axis=1)[0]
+
+        # Set up GradientTape to watch the input image
+        img_tensor = tf.convert_to_tensor(img_array, dtype=tf.float32)
+        with tf.GradientTape() as tape:
+            tape.watch(img_tensor)
+            predictions = self.model(img_tensor)
+            loss = predictions[:, predicted_class]  # Focus on the predicted class
+
+        # Calculate the gradients of the class score w.r.t. the input image
+        grads = tape.gradient(loss, img_tensor)
+        
+        # Take the absolute value of the gradients and reduce along color channels to create a grayscale map
+        grads = tf.abs(grads)
+        saliency_map = tf.reduce_max(grads, axis=-1).numpy()[0]
+        
+        # Normalize the saliency map to range between 0 and 1
+        saliency_map = (saliency_map - saliency_map.min()) / (saliency_map.max() - saliency_map.min())
+
+        # Overlay the saliency map on the original image
+        plt.figure(figsize=(8, 8))
+        plt.imshow(img, alpha=0.7)  # Display the original image
+        plt.imshow(saliency_map, cmap='viridis', alpha=0.8)  # Overlay the saliency map
+        plt.title("Saliency Map Overlay")
+        plt.axis('off')
+        plt.show()
