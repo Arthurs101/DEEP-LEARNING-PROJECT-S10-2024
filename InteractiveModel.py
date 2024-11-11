@@ -1,6 +1,7 @@
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 import tensorflow as tf
+import streamlit as st
 from keras.models import model_from_json
 from tensorflow.keras import backend as K
 from tensorflow.keras.preprocessing import image
@@ -103,10 +104,12 @@ class Simpsins_CNN:
         # Normalize the saliency map to range between 0 and 1
         saliency_map = (saliency_map - saliency_map.min()) / (saliency_map.max() - saliency_map.min())
 
-        # Overlay the saliency map on the original image
-        plt.figure(figsize=(8, 8))
-        plt.imshow(img, alpha=0.7)  # Display the original image
-        plt.imshow(saliency_map, cmap='viridis', alpha=0.8)  # Overlay the saliency map
-        plt.title("Saliency Map Overlay")
-        plt.axis('off')
-        plt.show()
+        # Create the overlayed saliency map using matplotlib
+        fig, ax = plt.subplots(figsize=(8, 8))
+        ax.imshow(img, alpha=0.7)  # Display the original image
+        ax.imshow(saliency_map, cmap='viridis', alpha=0.8)  # Overlay the saliency map
+        ax.set_title("Saliency Map Overlay")
+        ax.axis('off')
+        
+        # Render the plot using Streamlit
+        st.pyplot(fig)
