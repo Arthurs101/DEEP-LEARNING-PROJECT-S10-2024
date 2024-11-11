@@ -47,7 +47,7 @@ def main():
     if uploaded_file:
         # Muestra la imagen cargada
         img = Image.open(uploaded_file)
-        st.image(img, caption="Imagen cargada", use_column_width=True)
+        st.image(img, caption="Imagen cargada", use_container_width=True)
         
         # Predicción
         prediction = model.input_image(uploaded_file)
@@ -58,7 +58,7 @@ def main():
         if st.button("Mostrar mapa de saliencia"):
             # Obtener el mapa de saliencia como imagen
             saliency_img = get_saliency_map_image(uploaded_file)
-            st.image(saliency_img, caption="Mapa de Saliencia", use_column_width=True)
+            st.image(saliency_img, caption="Mapa de Saliencia", use_container_width=True)
 
 def get_saliency_map_image(image_file):
     """Genera el mapa de saliencia y devuelve la imagen."""
