@@ -1,47 +1,51 @@
-import tkinter as tk
-from tkinter import filedialog, Label, Button
-from PIL import Image, ImageTk
-import matplotlib.pyplot as plt
+import streamlit as st
+from PIL import Image
 from InteractiveModel import Simpsins_CNN
+import numpy as np
+import matplotlib.pyplot as plt
+import io
 
-class SimpsonRecognitionApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Simpson Character Recognition")
-        self.model = Simpsins_CNN("model_weightsk.h5")
+# Inicializa el modelo
+model = Simpsins_CNN("model_weightsk.h5")
+
+def main():
+    st.title("Simpsons Character Recognition")
+    st.write("Sube una imagen de un personaje de Los Simpson y el modelo intentará reconocerlo.")
+
+    # Cargar imagen
+    uploaded_file = st.file_uploader("Selecciona una imagen", type=["jpg", "jpeg", "png", "gif"])
+    
+    if uploaded_file:
+        # Muestra la imagen cargada
+        img = Image.open(uploaded_file)
+        st.image(img, caption="Imagen cargada", use_column_width=True)
         
-        # Widgets
-        self.load_button = Button(root, text="Load Image", command=self.load_image)
-        self.load_button.pack()
+        # Predicción
+        if st.button("Predecir personaje"):
+            prediction = model.input_image(uploaded_file)
+            st.write(f"Personaje Predicho: {prediction}")
 
-        self.image_label = Label(root)
-        self.image_label.pack()
+        # Mapa de saliencia
+        if st.button("Mostrar mapa de saliencia"):
+            # Obtener el mapa de saliencia como imagen
+            saliency_img = get_saliency_map_image(uploaded_file)
+            st.image(saliency_img, caption="Mapa de Saliencia", use_column_width=True)
 
-        self.prediction_label = Label(root, text="", font=("Arial", 16))
-        self.prediction_label.pack()
+def get_saliency_map_image(image_file):
+    """Genera el mapa de saliencia y devuelve la imagen."""
+    img = Image.open(image_file)
+    img_array = np.array(img.resize((128, 128))) / 255.0  # Normaliza la imagen
+    
+    # Calcula el mapa de saliencia usando el método `get_saliency_map` de `Simpsins_CNN`
+    fig, ax = plt.subplots()
+    model.get_saliency_map(image_file)
+    
+    # Guarda el gráfico como imagen en un buffer
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    plt.close(fig)
+    return buf
 
-        self.saliency_button = Button(root, text="Show Saliency Map", command=self.show_saliency_map, state='disabled')
-        self.saliency_button.pack()
-
-    def load_image(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg;*.jpeg;*.png;*.gif")]) # Change type if we are only working with gifs
-        if file_path:
-            self.display_image(file_path)
-            self.predict_character(file_path)
-            self.image_path = file_path
-            self.saliency_button['state'] = 'normal'
-
-    def display_image(self, file_path):
-        img = Image.open(file_path).resize((128, 128))
-        img = ImageTk.PhotoImage(img)
-        self.image_label.configure(image=img)
-        self.image_label.image = img  # Keep a reference to avoid garbage collection
-
-    def predict_character(self, file_path):
-        prediction = self.model.input_image(file_path)
-        self.prediction_label.config(text=f"Predicted Character: {prediction}") # Print the character prediction
-
-    def show_saliency_map(self):
-        if hasattr(self, 'image_path'):
-            self.model.get_saliency_map(self.image_path)
-            plt.show() # Print the saliency map
+if __name__ == "__main__":
+    main()

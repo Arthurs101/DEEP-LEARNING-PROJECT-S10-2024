@@ -1,14 +1,8 @@
-# from InteractiveModel import Simpsins_CNN
-from GUI import SimpsonRecognitionApp, tk
-# model = Simpsins_CNN("model_weightsk.h5")
-# prediction = model.input_image("data/simpsons_testdataset/simpsons_testdataset/agnes_skinner/001361.gif")
-# model.get_saliency_map("data/simpsons_testdataset/simpsons_testdataset/agnes_skinner/001361.gif")
-# print(f"your character is {prediction}")
+import os
 
 def main():
-    root = tk.Tk()
-    app = SimpsonRecognitionApp(root)
-    root.mainloop()
+    # Ejecuta Streamlit para cargar la interfaz en `gui.py`
+    os.system("streamlit run gui.py")
 
 if __name__ == '__main__':
     main()
