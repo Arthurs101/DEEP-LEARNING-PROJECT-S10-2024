@@ -5,11 +5,40 @@ import numpy as np
 import matplotlib.pyplot as plt
 import io
 
-# Inicializa el modelo
+# Configurar el estilo general de Streamlit
+st.set_page_config(page_title="Predicción de los Simpson")
+st.markdown(
+    """
+    <style>
+        body {
+            background-color: #FFD90F;  
+            color: white;               
+        }
+        .stFileUploader {
+            display: flex;
+            justify-content: center;
+        }
+        .stFileUploader button {
+            background-color: #F3CA0D;  
+            color: #FFFFFF;
+            border-radius: 20px;
+            border: none;
+            padding: 0.6em 1.5em;
+            font-size: 1em;
+        }
+        h1, h2, h3, h4 {
+            color: white;              
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Inicializar el modelo
 model = Simpsins_CNN("model_weightsk.h5")
 
 def main():
-    st.title("Simpsons Character Recognition")
+    st.title("Predicción de los Simpson")
     st.write("Sube una imagen de un personaje de Los Simpson y el modelo intentará reconocerlo.")
 
     # Cargar imagen
@@ -21,9 +50,9 @@ def main():
         st.image(img, caption="Imagen cargada", use_column_width=True)
         
         # Predicción
-        if st.button("Predecir personaje"):
-            prediction = model.input_image(uploaded_file)
-            st.write(f"Personaje Predicho: {prediction}")
+        prediction = model.input_image(uploaded_file)
+        st.subheader("Personaje predecido:")
+        st.write(f"**{prediction}**")
 
         # Mapa de saliencia
         if st.button("Mostrar mapa de saliencia"):
